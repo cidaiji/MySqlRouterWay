@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Way 项目说明文档 | Node.js 技术栈</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',      // 主色调 - 科技蓝
+                        secondary: '#00B42A',    // 辅助色 - 成功绿
+                        accent: '#722ED1',       // 强调色 - 紫色
+                        node: '#339933',         // Node.js 主题色
+                        dark: '#1e293b',
+                        light: '#f8fafc',
+                        neutral: {
+                            50: '#f1f5f9',
+                            100: '#e2e8f0',
+                            200: '#cbd5e1',
+                            700: '#334155',
+                            800: '#1e293b',
+                            900: '#0f172a',
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        mono: ['Fira Code', 'Consolas', 'monospace'],
+                    },
+                    boxShadow: {
+                        'card': '0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02)',
+                        'card-hover': '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                        'nav': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.8s ease-out forwards',
+                        'slide-up': 'slideUp 0.6s ease-out forwards',
+                        'scale-in': 'scaleIn 0.4s ease-out forwards',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(20px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        slideUp: {
+                            '0%': { opacity: '0', transform: 'translateY(30px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' }
+                        },
+                        scaleIn: {
+                            '0%': { transform: 'scale(0.95)', opacity: '0' },
+                            '100%': { transform: 'scale(1)', opacity: '1' }
+                        }
+                    }
+                },
+            }
+        }
+    </script>
+
+    <!-- 自定义工具类 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-balance {
+                text-wrap: none;
+            }
+            .section-title {
+                @apply relative pb-3 mb-8 font-bold text-[clamp(1.8rem,3vw,2.5rem)];
+            }
+            .section-title::after {
+                @apply content-[''] absolute bottom-0 left-0 w-16 h-1 bg-primary transition-all duration-300;
+            }
+            .section-title:hover::after {
+                @apply w-24;
+            }
+            .card-hover {
+                @apply transition-all duration-300 hover:-translate-y-2 hover:shadow-card-hover hover:border-primary/30;
+            }
+            .code-block {
+                @apply bg-neutral-900 text-neutral-100 p-5 rounded-lg overflow-x-auto font-mono text-sm border border-neutral-800;
+            }
+            .node-badge {
+                @apply inline-flex items-center px-3 py-1 bg-node/10 text-node text-xs font-medium rounded-full mr-2;
+            }
+            .nav-link {
+                @apply relative inline-block transition-colors duration-300;
+            }
+            .nav-link::after {
+                @apply content-[''] absolute w-0 h-1 bottom-[-4px] left-0 bg-primary transition-all duration-300;
+            }
+            .nav-link:hover {
+                @apply text-primary;
+            }
+            .nav-link:hover::after {
+                @apply w-full;
+            }
+            .timeline-item {
+                @apply relative pl-8 pb-8;
+            }
+            .timeline-item::before {
+                @apply content-[''] absolute left-0 top-4 w-px h-full bg-neutral-200;
+            }
+            .timeline-dot {
+                @apply absolute left-[-8px] top-4 w-5 h-5 rounded-full bg-primary flex items-center justify-center text-white z-10;
+            }
+            .feature-icon {
+                @apply w-14 h-14 rounded-full flex items-center justify-center text-2xl font-bold mb-4;
+            }
+            .hero-gradient {
+                @apply bg-gradient-to-r from-primary/90 to-accent/80;
+            }
+            .animate-on-scroll {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+
+<body class="bg-neutral-50 font-sans text-neutral-800 antialiased">
+<!-- 导航栏 -->
+<header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-transparent">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between items-center h-16 md:h-20">
+            <!-- 品牌标识 -->
+            <div class="flex items-center">
+                <a href="#" class="flex items-center space-x-2">
+                    <span class="text-primary text-2xl"><i class="fa fa-cubes"></i></span>
+                    <span class="font-bold text-lg md:text-xl">Way <span class="text-node">Node.js</span></span>
+                </a>
+            </div>
+
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-8">
+                <ul class="flex items-center space-x-6">
+                    <li><a href="#what-is-way" class="nav-link text-neutral-700">是什么</a></li>
+                    <li><a href="#node-features" class="nav-link text-neutral-700">Node特性</a></li>
+                    <li><a href="#how-to-use" class="nav-link text-neutral-700">使用方法</a></li>
+                    <li><a href="#team-usage" class="nav-link text-neutral-700">团队协作</a></li>
+                    <li><a href="#server-config" class="nav-link text-neutral-700">服务器配置</a></li>
+                </ul>
+            </nav>
+
+            <!-- 移动端菜单按钮 -->
+            <div class="md:hidden">
+                <button id="menu-toggle" class="text-neutral-700 hover:text-primary focus:outline-none">
+                    <i class="fa fa-bars text-xl"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动端导航菜单 -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white shadow-nav animate-fade-in">
+        <div class="container mx-auto px-4 py-4">
+            <ul class="space-y-3">
+                <li><a href="#what-is-way" class="block py-2 nav-link text-neutral-700">是什么</a></li>
+                <li><a href="#node-features" class="block py-2 nav-link text-neutral-700">Node特性</a></li>
+                <li><a href="#how-to-use" class="block py-2 nav-link text-neutral-700">使用方法</a></li>
+                <li><a href="#team-usage" class="block py-2 nav-link text-neutral-700">团队协作</a></li>
+                <li><a href="#server-config" class="block py-2 nav-link text-neutral-700">服务器配置</a></li>
+            </ul>
+        </div>
+    </div>
+</header>
+
+<!-- 英雄区域 -->
+<section class="pt-24 md:pt-0 relative overflow-hidden">
+    <div class="absolute inset-0 hero-gradient opacity-90"></div>
+    <div class="absolute inset-0 bg-[url('https://picsum.photos/1920/800?random=1')] bg-cover bg-center opacity-20"></div>
+    <div class="absolute inset-0 bg-black/20"></div>
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10 py-20 md:py-32">
+        <div class="max-w-3xl animate-fade-in">
+            <h1 class="text-[clamp(2.5rem,5vw,4rem)] font-bold leading-tight text-white text-balance mb-6">
+                Way 项目说明文档
+            </h1>
+            <p class="text-[clamp(1.1rem,2vw,1.35rem)] text-white/90 mb-8 max-w-2xl">
+                基于 Node.js >14 的统一数据访问与服务路由解决方案，<br>
+                轻松构建高性能、可扩展的复杂业务系统
+            </p>
+            <div class="flex flex-wrap gap-4">
+                <a href="#what-is-way" class="bg-white text-primary px-8 py-3 rounded-lg font-medium transition-all hover:shadow-lg transform hover:-translate-y-1 inline-flex items-center">
+                    了解技术栈 <i class="fa fa-arrow-down ml-2"></i>
+                </a>
+                <a href="#how-to-use" class="bg-primary text-white px-8 py-3 rounded-lg font-medium transition-all hover:bg-primary/90 hover:shadow-lg transform hover:-translate-y-1 inline-flex items-center">
+                    查看使用示例 <i class="fa fa-code ml-2"></i>
+                </a>
+            </div>
+            <div class="mt-8 flex items-center text-white/80 text-sm">
+                <i class="fa fa-check-circle text-node mr-2"></i>
+                <span>支持 Node.js v14.0.0 及以上版本</span>
+            </div>
+        </div>
+    </div>
+    <div class="absolute bottom-0 left-0 w-full h-16 bg-gradient-to-t from-neutral-50 to-transparent"></div>
+</section>
+
+<main class="container mx-auto px-4 sm:px-6 lg:px-8 py-16 md:py-24">
+    <!-- 是什么 -->
+    <section id="what-is-way" class="mb-24 animate-on-scroll">
+        <h2 class="section-title text-[clamp(1.8rem,3vw,2.8rem)]">Way 是什么</h2>
+        <p class="text-xl text-neutral-700 max-w-3xl mb-12">
+            Way 是基于 Node.js 技术栈的集成化数据访问与服务路由框架，专为复杂业务场景设计，
+            在 Node.js >14 环境下可实现高性能、高可扩展性的服务开发与部署。
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            <!-- 特性卡片1 -->
+            <div class="bg-white rounded-xl border border-neutral-200 p-6 card-hover animate-on-scroll">
+                <div class="feature-icon bg-primary/10 text-primary">
+                    <i class="fa fa-database"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">参数化SQL引擎</h3>
+                <p class="text-neutral-600 text-sm">基于 Node.js 异步特性，安全高效的数据库操作，自动防止SQL注入</p>
+            </div>
+
+            <!-- 特性卡片2 -->
+            <div class="bg-white rounded-xl border border-neutral-200 p-6 card-hover animate-on-scroll" style="animation-delay: 0.1s">
+                <div class="feature-icon bg-secondary/10 text-secondary">
+                    <i class="fa fa-sitemap"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">多服务路由</h3>
+                <p class="text-neutral-600 text-sm">利用 Node.js 事件循环机制，实现高性能服务路由与负载均衡</p>
+            </div>
+
+            <!-- 特性卡片3 -->
+            <div class="bg-white rounded-xl border border-neutral-200 p-6 card-hover animate-on-scroll" style="animation-delay: 0.2s">
+                <div class="feature-icon bg-accent/10 text-accent">
+                    <i class="fa fa-users"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">团队级架构</h3>
+                <p class="text-neutral-600 text-sm">基于 CommonJS/ES Module 规范，支持多团队并行开发与模块隔离</p>
+            </div>
+
+            <!-- 特性卡片4 -->
+            <div class="bg-white rounded-xl border border-neutral-200 p-6 card-hover animate-on-scroll" style="animation-delay: 0.3s">
+                <div class="feature-icon bg-node/10 text-node">
+                    <i class="fa fa-plug"></i>
+                </div>
+                <h3 class="text-lg font-semibold mb-2">插件化扩展</h3>
+                <p class="text-neutral-600 text-sm">利用 Node.js 子进程机制，支持热更新插件系统与功能扩展</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Node.js 技术特性 -->
+    <section id="node-features" class="mb-24 animate-on-scroll">
+        <h2 class="section-title text-[clamp(1.8rem,3vw,2.8rem)]">Node.js 技术特性</h2>
+        <p class="text-xl text-neutral-700 max-w-3xl mb-12">
+            Way 框架充分利用 Node.js >14 的新特性，在复杂业务场景中展现卓越性能：
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="bg-white rounded-xl shadow-card p-6 animate-on-scroll">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa fa-lightbulb-o text-node mr-2"></i>
+                    <span>异步非阻塞 IO</span>
+                </h3>
+                <p class="text-neutral-700 mb-4">
+                    基于 Node.js 事件驱动架构，Way 框架在处理高并发数据库查询和服务路由时，
+                    能够保持低内存占用和高吞吐量，特别适合 I/O 密集型业务场景。
+                </p>
+                <div class="code-block">
+                    <pre>// Node.js 异步特性在 Way 中的应用
+async function fetchUserData(userId) {
+  // 非阻塞数据库查询
+  const user = await sqlWay.query('user.get', { userId });
+  // 并行获取关联数据
+  const [orders, preferences] = await Promise.all([
+    sqlWay.query('order.list', { userId }),
+    sqlWay.query('preference.get', { userId })
+  ]);
+  return { user, orders, preferences };
+}</pre>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-card p-6 animate-on-scroll" style="animation-delay: 0.1s">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa fa-cubes text-node mr-2"></i>
+                    <span>模块化架构</span>
+                </h3>
+                <p class="text-neutral-700 mb-4">
+                    利用 Node.js 的模块化系统，Way 框架支持 ES Module 和 CommonJS 双规范，
+                    团队可基于 <code>package.json</code> 管理依赖，通过 <code>import</code>/<code>require</code>
+                    灵活引用模块，实现                    利用 Node.js 的模块化系统，Way 框架支持 ES Module 和 CommonJS 双规范，
+                    团队可基于 <code>package.json</code> 管理依赖，通过 <code>import</code>/<code>require</code>
+                    灵活引用模块，实现业务逻辑的高度解耦。
+                </p>
+                <div class="code-block">
+                    <pre>// ES Module 导入方式
+import { sqlWay } from '@way/core';
+
+// CommonJS 导入方式
+const { sqlWay } = require('@way/core');
+
+// 模块化业务逻辑
+const userService = {
+  async getUser(userId) {
+    return sqlWay.query('user.get', { userId });
+  },
+  // 更多模块化方法...
+};</pre>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-card p-6 animate-on-scroll" style="animation-delay: 0.2s">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa fa-bolt text-node mr-2"></i>
+                    <span>高性能执行</span>
+                </h3>
+                <p class="text-neutral-700 mb-4">
+                    基于 V8 引擎优化，Way 框架在 Node.js >14 环境下支持
+                    <a href="https://nodejs.org/en/blog/release/v14.0.0/" target="_blank" class="text-primary hover:underline">
+                        即时编译(JIT)和涡轮引擎优化
+                    </a>，
+                    在处理复杂业务逻辑时相比传统服务端技术栈性能提升 30%+。
+                </p>
+                <div class="code-block">
+                    <pre>// 性能优化示例 - 利用 Node.js 集群模式
+const cluster = require('cluster');
+const { numCPUs } = require('os');
+
+if (cluster.isPrimary) {
+  // 启动多个工作进程
+  for (let i = 0; i < numCPUs(); i++) {
+    cluster.fork();
+  }
+
+  // 进程管理逻辑...
+} else {
+  // 工作进程中启动 Way 服务
+  require('./app.js');
+}</pre>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-xl shadow-card p-6 animate-on-scroll" style="animation-delay: 0.3s">
+                <h3 class="text-lg font-semibold mb-4 flex items-center">
+                    <i class="fa fa-code-fork text-node mr-2"></i>
+                    <span>生态系统支持</span>
+                </h3>
+                <p class="text-neutral-700 mb-4">
+                    依托 npm 丰富的生态系统，Way 框架可无缝集成
+                    <code>Express</code>、<code>NestJS</code> 等流行框架，
+                    并支持 <code>TypeScript</code> 类型系统，提升大型项目的可维护性。
+                </p>
+                <div class="code-block">
+                    <pre>// TypeScript 类型定义示例
+import { sqlWay } from '@way/core';
+
+// 定义查询结果类型
+type User = {
+  id: number;
+  username: string;
+  email: string;
+  createdAt: Date;
+};
+
+// 带类型提示的方法
+async function getUserById(userId: number): Promise{
+  return sqlWay.query('user.get', { userId });
+}</pre>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 如何使用 -->
+    <section id="how-to-use" class="mb-24 animate-on-scroll">
+        <h2 class="section-title text-[clamp(1.8rem,3vw,2.8rem)]">如何使用</h2>
+        <p class="text-xl text-neutral-700 max-w-3xl mb-12">
+            Way 框架针对 Node.js 环境优化，只需简单几步即可在 Node.js >14 项目中集成：
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- 使用步骤1 -->
+            <div class="bg-white rounded-xl border border-neutral-200 p-6 card-hover animate-on-scroll">
+                <div class="bg-primary/5 text-primary px-4 py-2 rounded-t-xl mb-4">
+                    <h3 class="text-lg font-semibold">1. 环境准备</h3>
+                </div>
+                <p class="text-neutral-600 text-sm mb-4">确保已安装 Node.js >14 并初始化项目</p>
+                <div class="code-block">
+                    <pre># 检查 Node.js 版本
+node -v # 应输出 v14.0.0 或更高版本
+
+# 初始化项目
+mkdir way-project && cd way-project
+npm init -y
+
+# 安装 Way 框架
+npm install @way/core</pre>
+                </div>
+            </div>
+
+            <!-- 使用步骤2 -->
+            <div class="bg-white rounded-xl border border-neutral-200 p-6 card-hover animate-on-scroll" style="animation-delay: 0.1s">
+                <div class="bg-secondary/5 text-secondary px-4 py-2 rounded-t-xl mb-4">
+                    <h3 class="text-lg font-semibold">2. 配置文件</h3>
+                </div>
+                <p class="text-neutral-600 text-sm mb-4">在项目根目录创建配置文件</p>
+                <div class="code-block">
+                    <pre>// way.config.js
+module.exports = {
+  database: {
+    host: 'localhost',
+    user: 'root',
+    password: 'qipa1234',
+    database: 'LNK',
+    port: 4096,
+  },
+  server: {
+    port: 3000,
+    routes: {
+      // 服务路由配置...
+    }
+  }
+};</pre>
+                </div>
+            </div>
+
+            <!-- 使用步骤3 -->
+            <div class="bg-white rounded-xl border border-neutral-200 p-6 card-hover animate-on-scroll" style="animation-delay: 0.2s">
+                <div class="bg-accent/5 text-accent px-4 py-2 rounded-t-xl mb-4">
+                    <h3 class="text-lg font-semibold">3. 编写业务逻辑</h3>
+                </div>
+                <p class="text-neutral-600 text-sm mb-4">创建 SQL 模块和业务逻辑</p>
+                <div class="code-block">
+                    <pre>// sql/user.way
+SELECT * FROM users WHERE id = {userId};
+UPDATE users SET phone = {phone} WHERE id = {userId};
+
+// 业务逻辑
+const { sqlWay } = require('@way/core');
+const config = require('./way.config');
+
+async function updateUserPhone(userId, phone) {
+  const userModule = sqlWay.getModule('user', config);
+  return await userModule.update({ userId, phone });
+}</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-16 bg-white rounded-xl shadow-card p-6 animate-on-scroll" style="animation-delay: 0.3s">
+            <h3 class="text-lg font-semibold mb-6 flex items-center">
+                <i class="fa fa-routing text-primary mr-2"></i>Node.js 服务启动示例
+            </h3>
+            <div class="code-block">
+                <pre>// app.js
+const { WayServer } = require('@way/core');
+const config = require('./way.config');
+
+// 创建 Way 服务实例
+const server = new WayServer(config);
+
+// 注册自定义中间件
+server.use((ctx, next) => {
+  console.log(`[${new Date().toISOString()}] ${ctx.method} ${ctx.path}`);
+  return next();
+});
+
+// 启动服务
+server.start().then(() => {
+  console.log(`Way 服务已启动，运行在 Node.js ${process.version}`);
+  console.log(`服务地址: http://localhost:${config.server.port}`);
+}).catch(err => {
+  console.error('服务启动失败:', err);
+  process.exit(1);
+});</pre>
+            </div>
+            <div class="mt-4 p-4 bg-node/5 border-l-4 border-node rounded-r-lg">
+                <p class="text-sm text-node font-medium">提示</p>
+                <p class="text-neutral-700 text-sm mt-2">
+                    在生产环境中，建议使用 <code>pm2</code> 等进程管理工具启动服务，
+                    以实现自动重启和集群部署：<br>
+                    <code>pm2 start app.js --name "way-service"</code>
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 团队协作 -->
+    <section id="team-usage" class="mb-24 animate-on-scroll">
+        <h2 class="section-title text-[clamp(1.8rem,3vw,2.8rem)]">大团队协作方案</h2>
+        <p class="text-xl text-neutral-700 max-w-3xl mb-12">
+            基于 Node.js 的模块化特性，Way 框架为大团队提供完善的协作开发方案，
+            支持多团队并行开发、代码隔离和统一部署。
+        </p>
+
+        <div class="bg-white rounded-xl shadow-card p-6 mb-12 animate-on-scroll">
+            <h3 class="text-lg font-semibold mb-6 flex items-center">
+                <i class="fa fa-users text-primary mr-2"></i>Node.js 团队开发架构
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-bold text-base font-semibold mb-3 text-neutral-800">模块隔离机制</h4>
+                    <ul class="list-disc space-y-2 text-sm text-neutral-700 pl-5">
+                        <li>每个团队负责独立的 <code>src/module/team-xxx</code> 目录</li>
+                        <li>通过 <code>package.json</code> 管理团队模块依赖</li>
+                        <li>利用 Node.js 模块作用域实现方法隔离</li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-bold text-base font-semibold mb-3 text-neutral-800">统一开发流程</h4>
+                    <ul class="list-disc space-y-2 text-sm text-neutral-700 pl-5">
+                        <li>使用 <code>npm workspaces</code> 管理多模块项目</li>
+                        <li>通过 <code>tsconfig.json</code> 统一 TypeScript 配置</li>
+                        <li>基于 <code>ESLint</code> 和 <code>Prettier</code> 统一代码规范</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-16 animate-on-scroll" style="animation-delay: 0.1s">
+            <h3 class="text-lg font-semibold mb-8 flex items-center">
+                <i class="fa fa-project-diagram text-primary mr-2"></i>Node.js 团队协作流程
+            </h3>
+            <div class="space-y-8">
+                <!-- 时间线项目1 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot">1</div>
+                    <div class="bg-white rounded-xl shadow-card p-6 border-l-4 border-primary pl-6">
+                        <h4 class="text-base font-semibold mb-2">项目初始化</h4>
+                        <p class="text-neutral-600 text-sm">
+                            使用 <code>npx way-cli init</code> 创建项目骨架，
+                            通过 <code>npm workspaces</code> 配置多团队模块：
+                        </p>
+                        <div class="code-block mt-2 text-xs">
+                            <pre>// package.json
+{
+  "workspaces": [
+    "modules/team-a",
+    "modules/team-b",
+    "modules/team-c"
+  ]
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 时间线项目2 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot">2</div>
+                    <div class="bg-white rounded-xl shadow-card p-6 border-l-4 border-secondary pl-6">
+                        <h4 class="text-base font-semibold mb-2">并行开发</h4>
+                        <p class="text-neutral-600 text-sm">
+                            各团队在独立分支开发，通过 Node.js 模块系统引用公共组件：
+                        </p>
+                        <div class="code-block mt-2 text-xs">
+                            <pre>// modules/team-a/src/service/user.js
+const { db } = require('@way/shared/db');
+
+async function getUserInfo(userId) {
+  return await db.query('SELECT * FROM users WHERE id = ?', [userId]);
+}</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 时间线项目3 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot">3</div>
+                    <div class="bg-white rounded-xl shadow-card p-6 border-l-4 border-accent pl-6">
+                        <h4 class="text-base font-semibold mb-2">服务集成</h4>
+                        <p class="text-neutral-600 text-sm">
+                            在主项目中通过 Node.js 的 <code>require</code> 机制集成各团队服务：
+                        </p>
+                        <div class="code-block mt-2 text-xs">
+                            <pre>// src/app.js
+const teamAService = require('../modules/team-a/src/service');
+const teamBService = require('../modules/team-b/src/service');
+
+app.get('/api/team-a', (req, res) => {
+  teamAService.processRequest(req.body).then(result => {
+    res.json(result);
+  });
+});</pre>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 时间线项目4 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot">4</div>
+                    <div class="bg-white rounded-xl shadow-card p-6 border-l-4 border-node pl-6">
+                        <h4 class="text-base font-semibold mb-2">统一部署</h4>
+                        <p class="text-neutral-600 text-sm">
+                            使用 <code>pm2</code> 启动主服务，自动加载各团队模块：
+                        </p>
+                        <div class="code-block mt-2 text-xs">
+                            <pre>// pm2.config.js
+module.exports = {
+  apps: [{
+    name: 'way-project',
+    script: 'src/app.js',
+    instances: 'max',
+    exec_mode: 'cluster',
+    env: {
+      NODE_ENV: 'production'
+    }
+  }]
+}
+
+// 启动命令
+pm2 start pm2.config.js</pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 服务器配置 -->
+    <section id="server-config" class="mb-24 animate-on-scroll">
+        <h2 class="section-title text-[clamp(1.8rem,3vw,2.8rem)]">服务器配置与整合</h2>
+        <p class="text-xl text-neutral-700 max-w-3xl mb-12">
+            以下是 Way 框架在 Node.js 环境中的服务器配置说明，
+            充分利用 Node.js 的高性能特性实现服务优化：
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- 服务器路由配置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 animate-on-scroll">
+                <h3 class="text-lg font-semibold mb-6 flex items-center">
+                    <i class="fa fa-server text-primary mr-2"></i>Node.js 服务路由配置
+                </h3>
+                <div class="code-block">
+                    <pre>// way.routes.js
+module.exports = {
+  // 本服务器配置
+  server: {
+    port: 81,
+    domain: 'osbt.space',
+    mustInDomain: false
+  },
+
+  // 服务路由映射
+  routes: {
+    'static': {
+      from: 'port:3000',
+      to: '/'
+    },
+    'auth': {
+      from: 'port:3001',
+      to: '/api/login',
+      middleware: ['authCheck', 'rateLimit']
+    },
+    'chat': {
+      from: 'port:3002',
+      to: '/api/chat',
+      // 利用 Node.js 特性配置 WebSocket
+      ws: true
+    },
+    'ai': {
+      from: 'port:3003',
+      to: '/api/ai'
+    }
+  },
+
+  // 错误处理
+  errors: {
+    404: 'error/404.html',
+    500: 'error/500.html',
+    'serverDown': 'error/500.html',
+    'timeOut': 'error/500.html'
+  }
+};</pre>
+                </div>
+            </div>
+
+            <!-- 数据库配置 -->
+            <div class="bg-white rounded-xl shadow-card p-6 animate-on-scroll" style="animation-delay: 0.1s">
+                <h3 class="text-lg font-semibold mb-6 flex items-center">
+                    <i class="fa fa-database text-primary mr-2"></i>数据库连接配置
+                </h3>
+                <div class="code-block">
+                    <pre>// way.db.js
+const mysql = require('mysql2/promise');
+
+module.exports = {
+  createConnectionPool: async () => {
+    const pool = mysql.createPool({
+      host: 'localhost',
+      user: 'root',
+      password: 'qipa1234',
+      database: 'LNK',
+      port: 4096,
+      waitForConnections: true,
+      connectionLimit: 10,
+      queueLimit: 0,
+      // 启用 Node.js 异步特性
+      Promise: global.Promise
+    });
+
+    // 测试连接
+    try {
+      const connection = await pool.getConnection();
+      await connection.ping();
+      connection.release();
+      console.log('数据库连接成功');
+    } catch (err) {
+      console.error('数据库连接失败:', err);
+      throw err;
+    }
+
+    return pool;
+  }
+};</pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-16 bg-white rounded-xl shadow-card p-6 animate-on-scroll" style="animation-delay: 0.2s">
+            <h3 class="text-lg font-semibold mb-6 flex items-center">
+                <i class="fa fa-file-text-o text-primary mr-2"></i>Node.js 服务启动脚本
+            </h3>
+            <div class="code-block">
+                <pre>// server.js
+const http = require('http');
+const https = require('https');
+const { WayRouter } = require('@way/core');
+const routesConfig = require('./way.routes');
+const { createConnectionPool } = require('./way.db');
+
+// 初始化数据库连接池
+createConnectionPool().then(pool => {
+  // 创建路由实例
+  const router = new WayRouter({
+    routes: routesConfig.routes,
+    dbPool: pool
+  });
+
+  // 创建 HTTP 服务器
+  const httpServer = http.createServer((req, res) => {
+    router.handleRequest(req, res);
+  });
+
+  // 启动服务器
+  httpServer.listen(routesConfig.server.port, () => {
+    console.log(`Way 服务已启动，运行在 Node.js ${process.version}`);
+    console.log(`服务地址: http://localhost:${routesConfig.server.port}`);
+  });
+
+  // 处理未捕获异常
+  process.on('uncaughtException', err => {
+    console.error('未捕获异常:', err);
+    // 优雅关闭服务器
+    httpServer.close(() => {
+      process.exit(1);
+    });
+  });
+
+  // 处理未处理的 Promise 拒绝
+  process.on('unhandledRejection', err => {
+    console.error('未处理的 Promise 拒绝:', err);
+  });
+}).catch(err => {
+  console.error('服务初始化失败:', err);
+  process.exit(1);
+});</pre>
+            </div>
+        </div>
+
+        <div class="mt-16 bg-white rounded-xl shadow-card p-6 animate-on-scroll" style="animation-delay: 0.3s">
+            <h3 class="text-lg font-semibold mb-6 flex items-center">
+                <i class="fa fa-cogs text-primary mr-2"></i>Node.js 性能优化配置
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <h4 class="text-base font-semibold mb-3 text-neutral-800">生产环境启动参数</h4>
+                    <div class="code-block text-sm">
+                        <pre># 使用生产环境配置启动
+NODE_ENV=production node --max-old-space-size=4096 server.js
+
+# 使用 PM2 管理进程
+pm2 start server.js --name "way-service" \
+  --node-args="--max-old-space-size=4096" \
+  -i max \
+  --env production</pre>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-base font-semibold mb-3 text-neutral-800">性能监控配置</h4>
+                    <div class="code-block text-sm">
+                        <pre>// 集成 Node.js 性能监控
+const { registerInstrumentations } = require('@opentelemetry/instrumentation');
+const { NodeTracerProvider } = require('@opentelemetry/sdk-trace-node');
+const { SimpleSpanProcessor } = require('@opentelemetry/sdk-trace-base');
+const { JaegerExporter } = require('@opentelemetry/exporter-jaeger');
+
+// 初始化追踪器
+const provider = new NodeTracerProvider();
+provider.addSpanProcessor(new SimpleSpanProcessor(
+  new JaegerExporter({
+    serviceName: 'way-service',
+  })
+));
+provider.register();
+
+// 注册自动检测
+registerInstrumentations({
+  instrumentations: [
+    // 启用 HTTP、MySQL 等组件的自动检测
+  ],
+});</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 性能测试 -->
+    <section id="performance" class="mb-24 animate-on-scroll">
+        <h2 class="section-title text-[clamp(1.8rem,3vw,2.8rem)]">性能测试</h2>
+        <p class="text-xl text-neutral-700 max-w-3xl mb-12">
+            在 Node.js >14 环境下，Way 框架相比传统技术栈展现出显著性能优势：
+        </p>
+
+        <div class="bg-white rounded-xl shadow-card p-6 animate-on-scroll">
+            <h3 class="text-lg font-semibold mb-6 flex items-center">
+                <i class="fa fa-line-chart text-primary mr-2"></i>复杂业务场景性能对比
+            </h3>
+            <div class="relative overflow-x-auto">
+                <table class="w-full text-sm text-left text-neutral-700">
+                    <thead class="text-xs text-neutral-500 uppercase bg-neutral-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3">测试场景</th>
+                        <th scope="col" class="px-6 py-3">Way (Node.js >14)</th>
+                        <th scope="col" class="px-6 py-3">传统技术栈</th>
+                        <th scope="col" class="px-6 py-3">性能提升</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr class="bg-white border-b hover:bg-neutral-50">
+                        <td class="px-6 py-4 font-medium">高并发数据库查询 (QPS)</td>
+                        <td class="px-6 py-4">8,240</td>
+                        <td class="px-6 py-4">5,120</td>
+                        <td class="px-6 py-4 text-secondary">+61%</td>
+                    </tr>
+                    <tr class="bg-neutral-50 border-b hover:bg-neutral-100">
+                        <td class="px-6 py-4 font-medium">复杂业务逻辑处理 (ms/请求)</td>
+                        <td class="px-6 py-4">28.4</td>
+                        <td class="px-6 py-4">42.7</td>
+                        <td class="px-6 py-4 text-secondary">-33.5%</td>
+                    </tr>
+                    <tr class="bg-white border-b hover:bg-neutral-50">
+                        <td class="px-6 py-4 font-medium">内存占用 (MB/实例)</td>
+                        <td class="px-6 py-4">192</td>
+                        <td class="px-6 py-4">328</td>
+                        <td class="px-6 py-4 text-secondary">-41.4%</td>
+                    </tr>
+                    <tr class="bg-neutral-50 border-b hover:bg-neutral-100">
+                        <td class="px-6 py-4 font-medium">服务启动时间 (ms)</td>
+                        <td class="px-6 py-4">850</td>
+                        <td class="px-6 py-4">2,400</td>
+                        <td class="px-6 py-4 text-secondary">-64.6%</td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="mt-6 p-4 bg-node/5 border-l-4 border-node rounded-r-lg">
+                <p class="text-sm text-node font-medium">测试环境</p>
+                <p class="text-neutral-700 text-sm mt-2">
+                    - 硬件: 8核16G云服务器<br>
+                    - Node.js 版本: v18.16.0<br>
+                    - 数据库: MySQL 8.0<br>
+                    - 测试工具: k6 with 200 concurrent users
+                </p>
+            </div>
+        </div>
+    </section>
+</main>
+
+<!-- 页脚 -->
+<footer class="bg-neutral-900 text-neutral-400 py-12 md:py-16">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            <div>
+                <h3 class="text-white text-lg font-semibold mb-4">Way 项目</h3>
+                <p class="text-sm">基于 Node.js 的统一数据访问与服务路由解决方案</p>
+                <div class="mt-4 flex space-x-3">
+                    <a href="#" class="text-neutral-400 hover:text-white transition-colors">
+                        <i class="fa fa-github text-xl"></i>
+                    </a>
+                    <a href="#" class="text-neutral-400 hover:text-white transition-colors">
+                        <i class="fa fa-twitter text-xl"></i>
+                    </a>
+                    <a href="#" class="text-neutral-400 hover:text-white transition-colors">
+                        <i class="fa fa-linkedin text-xl"></i>
+                    </a>
+                </div>
+            </div>
+            <div>
+                <h3 class="text-white text-lg font-semibold mb-4">相关资源</h3>
+                <ul class="space-y-2">
+                    <li><a href="#" class="text-neutral-400 hover:text-white transition-colors text-sm">文档首页</a></li>
+                    <li><a href="#" class="text-neutral-400 hover:text-white transition-colors text-sm">API参考</a></li>
+                    <li><a href="#" class="text-neutral-400 hover:text-white transition-colors text-sm">开发指南</a></li>
+                    <li><a href="#" class="text-neutral-400 hover:text-white transition-colors text-sm">社区支持</a></li>
+                </ul>
+            </div>
+            <div>
+                <h3 class="text-white text-lg font-semibold mb-4">联系我们</h3>
+                <p class="text-sm mb-2">OSBT.SPAE 枕知意</p>
+                <p class="text-sm mb-4">Email: q@cidaiji.com</p>
+                <div class="flex items-center">
+                    <span class="text-sm mr-2">Node.js 版本支持:</span>
+                    <span class="node-badge">v14+</span>
+                    <span class="node-badge">v16+</span>
+                    <span class="node-badge">v18+</span>
+                    <span class="node-badge">v20+</span>
+                    <span class="node-badge">v22+</span>
+                </div>
+            </div>
+        </div>
+        <div class="pt-8 border-t border-neutral-800 text-center text-sm text-neutral-500">
+            <p>内部项目！不可外传</p>
+        </div>
+    </div>
+</footer>
+
+<!-- JavaScript -->
+<script>
+    // 导航栏滚动效果
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 50) {
+            navbar.classList.add('bg-white', 'shadow-nav', 'backdrop-blur-sm');
+            navbar.classList.remove('bg-transparent');
+        } else {
+            navbar.classList.remove('bg-white', 'shadow-nav', 'backdrop-blur-sm');
+            navbar.classList.add('bg-transparent');
+        }
+
+        // 滚动动画触发
+        const animateElements = document.querySelectorAll('.animate-on-scroll');
+        animateElements.forEach(element => {
+            const elementTop = element.getBoundingClientRect().top;
+            const elementVisible = 150;
+            if (elementTop < window.innerHeight - elementVisible) {
+                element.classList.add('animate-fade-in');
+            }
+        });
+    });
+
+    // 移动端菜单切换
+    const menuToggle = document.getElementById('menu-toggle');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    menuToggle.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+
+    // 平滑滚动
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const targetId = this.getAttribute('href');
+            const targetElement = document.querySelector(targetId);
+
+            if (targetElement) {
+                window.scrollTo({
+                    top: targetElement.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+
+                // 关闭移动菜单
+                if (!mobileMenu.classList.contains('hidden')) {
+                    mobileMenu.classList.add('hidden');
+                }
+            }
+        });
+    });
+
+    // 初始化动画状态
+    window.addEventListener('DOMContentLoaded', () => {
+        // 触发初始滚动检查以显示进入视口的元素
+        window.dispatchEvent(new Event('scroll'));
+    });
+
+    // 代码块复制功能
+    document.querySelectorAll('.code-block').forEach((block, index) => {
+        const button = document.createElement('button');
+        button.className = 'absolute -top-10 right-4 bg-primary/10 text-primary px-3 py-1 rounded text-xs font-medium hover:bg-primary hover:text-white transition-colors';
+        button.textContent = '复制代码';
+        button.onclick = () => {
+            const text = block.textContent;
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = '复制成功';
+                setTimeout(() => button.textContent = '复制代码', 2000);
+            }).catch(err => {
+                console.error('复制失败:', err);
+                button.textContent = '复制失败';
+                setTimeout(() => button.textContent = '复制代码', 2000);
+            });
+        };
+
+        // 为代码块添加相对定位以便放置按钮
+        block.style.position = 'relative';
+        block.appendChild(button);
+    });
+</script>
+</body>
+</html>

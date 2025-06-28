@@ -1,0 +1,4 @@
+INSERT INTO user_tokens (user_id, token, created_at)
+VALUES ({userId}, {token}, NOW())
+ON CONFLICT (user_id) DO UPDATE
+SET token = EXCLUDED.token, created_at = EXCLUDED.created_at;

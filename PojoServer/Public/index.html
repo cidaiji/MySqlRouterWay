@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户登录 - 系统</title>
+    <style>
+        /* 基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f5f7fa;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 400px;
+            margin: 80px auto;
+            padding: 30px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+
+        /* 选项卡样式 */
+        .tab-container {
+            display: flex;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+        }
+
+        .tab {
+            flex: 1;
+            padding: 12px 10px;
+            text-align: center;
+            cursor: pointer;
+            font-weight: 500;
+            color: #7f8c8d;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab.active {
+            color: #3498db;
+            border-bottom: 2px solid #3498db;
+        }
+
+        /* 表单样式 */
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3498db;
+            box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+        }
+
+        .captcha-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        .captcha-input {
+            flex: 3;
+        }
+
+        .captcha-btn {
+            flex: 1;
+            height: 44px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #f9f9f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s;
+        }
+
+        .captcha-btn:hover {
+            background-color: #e0e7ed;
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #3498db;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .social-login {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        .social-login p {
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .social-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            transition: all 0.3s;
+        }
+
+        .social-btn:hover {
+            border-color: #3498db;
+            color: #3498db;
+        }
+
+        .register-link {
+            margin-top: 20px;
+            text-align: center;
+            color: #7f8c8d;
+        }
+
+        .register-link a {
+            color: #3498db;
+            text-decoration: none;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background-color: rgba(255, 59, 48, 0.1);
+            color: #e74c3c;
+            border-radius: 4px;
+            display: none;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 450px) {
+            .container {
+                margin: 20px 15px;
+                padding: 20px;
+            }
+
+            .social-buttons {
+                flex-direction: column;
+            }
+
+            .social-btn {
+                flex: none;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>用户登录</h1>
+
+    <div class="tab-container">
+        <div class="tab active" data-tab="username">账号密码</div>
+        <div class="tab" data-tab="phone">手机登录</div>
+        <div class="tab" data-tab="email">邮箱登录</div>
+    </div>
+
+    <div id="username-form" class="form-content active">
+        <form id="username-login-form">
+            <div class="form-group">
+                <label for="username">用户名</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">密码</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+
+            <div class="form-group captcha-container">
+                <label for="captcha">验证码</label>
+                <input type="text" id="captcha" name="captcha" class="captcha-input" required>
+                <div class="captcha-btn" id="captcha-btn">点击获取</div>
+            </div>
+
+            <div class="error-message" id="username-error">请检查您的用户名和密码</div>
+
+            <button type="submit">登录</button>
+        </form>
+    </div>
+
+    <div id="phone-form" class="form-content" style="display: none;">
+        <form id="phone-login-form">
+            <div class="form-group">
+                <label for="phone">手机号码</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+
+            <div class="form-group captcha-container">
+                <label for="phone-captcha">验证码</label>
+                <input type="text" id="phone-captcha" name="captcha" class="captcha-input" required>
+                <button type="button" id="send-phone-captcha" class="captcha-btn">获取验证码</button>
+            </div>
+
+            <div class="error-message" id="phone-error">请检查您的手机号和验证码</div>
+
+            <button type="submit">登录</button>
+        </form>
+    </div>
+
+    <div id="email-form" class="form-content" style="display: none;">
+        <form id="email-login-form">
+            <div class="form-group">
+                <label for="email">邮箱地址</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+
+            <div class="form-group captcha-container">
+                <label for="email-captcha">验证码</label>
+                <input type="text" id="email-captcha" name="captcha" class="captcha-input" required>
+                <button type="button" id="send-email-captcha" class="captcha-btn">获取验证码</button>
+            </div>
+
+            <div class="error-message" id="email-error">请检查您的邮箱和验证码</div>
+
+            <button type="submit">登录</button>
+        </form>
+    </div>
+
+    <div class="social-login">
+        <p>其他登录方式</p>
+        <div class="social-buttons">
+            <div class="social-btn">
+                <i>微信</i>
+            </div>
+            <div class="social-btn">
+                <i>QQ</i>
+            </div>
+            <div class="social-btn">
+                <i>支付宝</i>
+            </div>
+        </div>
+    </div>
+
+    <div class="register-link">
+        还没有账号？<a href="#">立即注册</a>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const API_PREFIX = '/v1/account'; // 统一API前缀
+
+        // 选项卡切换
+        const tabs = document.querySelectorAll('.tab');
+        const formContents = document.querySelectorAll('.form-content');
+
+        tabs.forEach(tab => {
+            tab.addEventListener('click', function() {
+                // 移除所有active类
+                tabs.forEach(t => t.classList.remove('active'));
+                formContents.forEach(f => {
+                    f.classList.remove('active');
+                    f.style.display = 'none';
+                });
+
+                // 添加当前active类
+                this.classList.add('active');
+                const tabId = this.getAttribute('data-tab');
+                document.getElementById(`${tabId}-form`).classList.add('active');
+                document.getElementById(`${tabId}-form`).style.display = 'block';
+            });
+        });
+
+        // 验证码管理
+        let captchaId = '';
+        const captchaBtn = document.getElementById('captcha-btn');
+        const sendPhoneCaptcha = document.getElementById('send-phone-captcha');
+        const sendEmailCaptcha = document.getElementById('send-email-captcha');
+        let phoneCaptchaId = '';
+        let emailCaptchaId = '';
+        let sendBtnTimer = null;
+
+        // 生成图形验证码（带API前缀）
+        captchaBtn.addEventListener('click', function() {
+            fetch(`${API_PREFIX}/captcha`)
+                .then(response => response.json())
+                .then(data => {
+                    captchaId = response.headers.get('X-Captcha-ID');
+                    this.textContent = '已获取';
+                    this.style.backgroundColor = '#e0e7ed';
+                    this.style.color = '#555';
+                    this.disabled = true;
+
+                    // 5分钟后重置
+                    setTimeout(() => {
+                        this.textContent = '点击获取';
+                        this.style.backgroundColor = '';
+                        this.style.color = '';
+                        this.disabled = false;
+                    }, 5 * 60 * 1000);
+                })
+                .catch(error => {
+                    console.error('获取验证码失败:', error);
+                    alert('获取验证码失败，请重试');
+                });
+        });
+
+        // 发送手机验证码（带API前缀）
+        sendPhoneCaptcha.addEventListener('click', function() {
+            const phone = document.getElementById('phone').value;
+            if (!phone) {
+                alert('请先输入手机号码');
+                return;
+            }
+
+            // 发送请求获取手机验证码
+            fetch(`${API_PREFIX}/bind/phone`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phone: phone,
+                    token: '' // 未登录时token为空，后端处理
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    phoneCaptchaId = data.data.captchaId;
+                    this.textContent = '60秒后重试';
+                    this.style.backgroundColor = '#e0e7ed';
+                    this.style.color = '#555';
+                    this.disabled = true;
+
+                    // 60秒后重置
+                    let countdown = 60;
+                    sendBtnTimer = setInterval(() => {
+                        countdown--;
+                        if (countdown <= 0) {
+                            this.textContent = '获取验证码';
+                            this.style.backgroundColor = '';
+                            this.style.color = '';
+                            this.disabled = false;
+                            clearInterval(sendBtnTimer);
+                        } else {
+                            this.textContent = `${countdown}秒后重试`;
+                        }
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('发送手机验证码失败:', error);
+                    alert('发送验证码失败，请重试');
+                    clearInterval(sendBtnTimer);
+                    this.textContent = '获取验证码';
+                    this.style.backgroundColor = '';
+                    this.style.color = '';
+                    this.disabled = false;
+                });
+        });
+
+        // 发送邮箱验证码（带API前缀）
+        sendEmailCaptcha.addEventListener('click', function() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert('请先输入邮箱地址');
+                return;
+            }
+
+            // 发送请求获取邮箱验证码
+            fetch(`${API_PREFIX}/bind/email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    token: '' // 未登录时token为空，后端处理
+                })
+            })
+                .then(response => response.json())
+                .then(data => {
+                    emailCaptchaId = data.data.captchaId;
+                    this.textContent = '60秒后重试';
+                    this.style.backgroundColor = '#e0e7ed';
+                    this.style.color = '#555';
+                    this.disabled = true;
+
+                    // 60秒后重置
+                    let countdown = 60;
+                    sendBtnTimer = setInterval(() => {
+                        countdown--;
+                        if (countdown <= 0) {
+                            this.textContent = '获取验证码';
+                            this.style.backgroundColor = '';
+                            this.style.color = '';
+                            this.disabled = false;
+                            clearInterval(sendBtnTimer);
+                        } else {
+                            this.textContent = `${countdown}秒后重试`;
+                        }
+                    }, 1000);
+                })
+                .catch(error => {
+                    console.error('发送邮箱验证码失败:', error);
+                    alert('发送验证码失败，请重试');
+                    clearInterval(sendBtnTimer);
+                    this.textContent = '获取验证码';
+                    this.style.backgroundColor = '';
+                    this.style.color = '';
+                    this.disabled = false;
+                });
+        });
+
+        // 账号密码登录表单提交（带API前缀）
+        const usernameLoginForm = document.getElementById('username-login-form');
+        const usernameError = document.getElementById('username-error');
+
+        usernameLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const captcha = document.getElementById('captcha').value;
+
+            if (!username || !password || !captcha) {
+                usernameError.textContent = '请填写所有必填字段';
+                usernameError.style.display = 'block';
+                return;
+            }
+
+            // 显示加载状态
+            const originalText = this.querySelector('button').textContent;
+            this.querySelector('button').disabled = true;
+            this.querySelector('button').textContent = '登录中...';
+
+            // 发送登录请求
+            fetch(`${API_PREFIX}/login`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    username: username,
+                    password: password,
+                    captcha: captcha,
+                    captchaId: captchaId
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('登录失败');
+                    }
+                })
+                .then(data => {
+                    // 登录成功，存储token并跳转
+                    document.cookie = `token=${data.data.token}; max-age=${24*60*60}; httpOnly=true`;
+                    alert('登录成功！');
+                    window.location.href = '/user/profile'; // 替换为您的用户页面
+                }).catch(error => {
+                // 登录失败，显示错误信息
+                usernameError.textContent = error.message || '用户名或密码错误';
+                usernameError.style.display = 'block';
+                console.error('登录失败:', error);
+            })
+                .finally(() => {
+                    // 恢复按钮状态
+                    this.querySelector('button').disabled = false;
+                    this.querySelector('button').textContent = originalText;
+                });
+        });
+
+        // 手机登录表单提交（带API前缀）
+        const phoneLoginForm = document.getElementById('phone-login-form');
+        const phoneError = document.getElementById('phone-error');
+
+        phoneLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const phone = document.getElementById('phone').value;
+            const captcha = document.getElementById('phone-captcha').value;
+
+            if (!phone || !captcha) {
+                phoneError.textContent = '请填写所有必填字段';
+                phoneError.style.display = 'block';
+                return;
+            }
+
+            // 显示加载状态
+            const originalText = this.querySelector('button').textContent;
+            this.querySelector('button').disabled = true;
+            this.querySelector('button').textContent = '登录中...';
+
+            // 发送登录请求
+            fetch(`${API_PREFIX}/login/phone`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    phone: phone,
+                    captcha: captcha,
+                    captchaId: phoneCaptchaId
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('登录失败');
+                    }
+                })
+                .then(data => {
+                    // 登录成功，存储token并跳转
+                    document.cookie = `token=${data.data.token}; max-age=${24*60*60}; httpOnly=true`;
+                    alert(`登录成功${data.data.isNewUser ? '，已为您自动注册账号' : ''}`);
+                    window.location.href = '/user/profile'; // 替换为您的用户页面
+                })
+                .catch(error => {
+                    // 登录失败，显示错误信息
+                    phoneError.textContent = error.message || '手机号或验证码错误';
+                    phoneError.style.display = 'block';
+                    console.error('登录失败:', error);
+                })
+                .finally(() => {
+                    // 恢复按钮状态
+                    this.querySelector('button').disabled = false;
+                    this.querySelector('button').textContent = originalText;
+                });
+        });
+
+        // 邮箱登录表单提交（带API前缀）
+        const emailLoginForm = document.getElementById('email-login-form');
+        const emailError = document.getElementById('email-error');
+
+        emailLoginForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const email = document.getElementById('email').value;
+            const captcha = document.getElementById('email-captcha').value;
+
+            if (!email || !captcha) {
+                emailError.textContent = '请填写所有必填字段';
+                emailError.style.display = 'block';
+                return;
+            }
+
+            // 显示加载状态
+            const originalText = this.querySelector('button').textContent;
+            this.querySelector('button').disabled = true;
+            this.querySelector('button').textContent = '登录中...';
+
+            // 发送登录请求
+            fetch(`${API_PREFIX}/login/email`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    email: email,
+                    captcha: captcha,
+                    captchaId: emailCaptchaId
+                })
+            })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json();
+                    } else {
+                        throw new Error('登录失败');
+                    }
+                })
+                .then(data => {
+                    // 登录成功，存储token并跳转
+                    document.cookie = `token=${data.data.token}; max-age=${24*60*60}; httpOnly=true`;
+                    alert(`登录成功${data.data.isNewUser ? '，已为您自动注册账号' : ''}`);
+                    window.location.href = '/user/profile'; // 替换为您的用户页面
+                })
+                .catch(error => {
+                    // 登录失败，显示错误信息
+                    emailError.textContent = error.message || '邮箱或验证码错误';
+                    emailError.style.display = 'block';
+                    console.error('登录失败:', error);
+                })
+                .finally(() => {
+                    // 恢复按钮状态
+                    this.querySelector('button').disabled = false;
+                    this.querySelector('button').textContent = originalText;
+                });
+        });
+
+        // 清除错误信息
+        document.querySelectorAll('input').forEach(input => {
+            input.addEventListener('focus', function() {
+                const errorElement = this.closest('.form-group').nextElementSibling;
+                if (errorElement && errorElement.classList.contains('error-message')) {
+                    errorElement.style.display = 'none';
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,1 @@
+const fs=require("fs"),path=require("path"),logoFilePath=path.join(__dirname,"Logo/Maplogo.txt");fs.readFile(logoFilePath,"utf8",(o,e)=>{o?console.error("无法读取LOGO文件:",o):(console.log(e),console.log("\n应用程序正在启动中..."))});

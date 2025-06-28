@@ -1,0 +1,50 @@
+{
+  "name": "team-collaboration-gateway",
+  "version": "1.0.0",
+  "description": "团队协作微服务网关 - 支持多部门独立开发，统一服务入口，配置驱动的服务编排",
+  "main": "APP.js",
+  "scripts": {
+    "标准启动": "bun APP.js",
+    "只启动后端群": "bun JsStarter.js",
+    "只启动代理服务器": "bun Router/Router.js",
+    "检查配置文件": "node -e \\\\\\\"console.log('检查配置文件...'); require('fs').existsSync('Router/Conf/Router.ini') ? console.log('✅ 配置文件存在') : console.log('❌ 配置文件不存在')\\\\\\\""
+  },
+  "keywords": [
+    "microservices",
+    "gateway",
+    "team-collaboration",
+    "api-gateway",
+    "service-mesh",
+    "config-driven",
+    "hot-reload",
+    "departmental-cooperation",
+    "unified-entry",
+    "service-orchestration"
+  ],
+  "author": "团队协作项目组",
+  "license": "MIT",
+  "engines": {
+    "node": ">=16.0.0",
+    "bun": ">=1.0.0"
+  },
+  "dependencies": {
+    "bun": "^1.2.17",
+    "chalk": "^5.4.1",
+    "chokidar": "^4.0.3",
+    "clear": "^0.1.0",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "http-proxy": "^1.18.1",
+    "http-proxy-middleware": "^3.0.5",
+    "ini": "^5.0.0",
+    "lfu-cache": "^0.1.0",
+    "lru-cache": "^11.1.0",
+    "mysql2": "^3.14.1",
+    "node-cache": "^5.1.2",
+    "redis": "^5.5.6",
+    "socket.io": "^4.8.1",
+    "uuid": "^11.1.0",
+    "yarn": "^1.22.22"
+  },
+  "homepage": "https://osbt.space"
+}
